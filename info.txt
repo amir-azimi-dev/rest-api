@@ -1,0 +1,33 @@
+express, dotenv, body-parser, cors
+
+---------------------------------------
+
+1- npm install nodemon --dev
+
+2- in <<nodemon.json>>: 
+{
+    "watch": [
+        "app",
+        "server.js"
+    ],
+
+    "ext": "js",
+    "ignore": [
+        "*.spec.js" // for test
+    ],
+
+    "exec": "node server.js"
+}
+
+3- in package.json: 
+"scripts": {
+    "nodemon": "nodemon server.js"
+},
+
+4- npm run nodemon
+---------------------------------------
+
+const cors = require("corse");
+app.use(cors);
+
+---------------------------------------
