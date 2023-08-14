@@ -1,7 +1,10 @@
 const userModel = require("../models/users");
 
 const usersList = async (req, res, next) => {
-    const users = await userModel.find();
+    let fields = req.query.fields?.split(",") || [];
+    projection = fields.reduce((prev, current) => ({ ...prev, [current]: 1 }), { _id: 0 })
+
+    const users = await userModel.find({}, projection);
     res.status(200).send({
         success: true,
         message: "users list generated successfully",
