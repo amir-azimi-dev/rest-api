@@ -1,4 +1,4 @@
-express, dotenv, body-parser, cors
+express, dotenv, body-parser, cors, mongoose
 
 ---------------------------------------
 
@@ -29,5 +29,70 @@ express, dotenv, body-parser, cors
 
 const cors = require("corse");
 app.use(cors);
+
+---------------------------------------
+
+// npm install mongoose
+
+// connection
+const mongoose = require("mongoose");
+const {
+    MONGO_HOST,
+    MONGO_DB_NAME,
+    MONGO_USERNAME,
+    MONGO_PASSWORD,
+    MONGO_PORT,
+} = process.env;
+
+mongoose.connection.on("error", err => console.log("mongoDB Connection error:\n", err.message));
+
+module.exports = () => {
+    console.log(`mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB_NAME}`);
+    mongoose.connect(`mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB_NAME}`)
+    .then(() => console.log("mongoDB connected."));
+};
+
+// model
+const mongoose = require("mongoose");
+
+const userSchema = new mongoose.Schema({
+    first_name: String,
+    last_name: String,
+    mobile: String,
+    wallet: {
+        type: Number,
+        default: 0
+    },
+    email: String,
+    created_at: {
+        type: Date,
+        default: Date.now()
+    },
+    updated_at: {
+        type: Date,
+        default: Date.now()
+    }
+});
+
+const userModel = mongoose.model("User", userSchema); //-->
+// collection name: users (plural of user)
+
+module.exports = userModel;
+
+// controller
+
+const users = await userModel.find();
+
+const userModel = require('../models/users');
+const newUser = new userModel({
+    first_name: "امیر",
+    last_name: "عظیمی",
+    mobile: "09101234567",
+    wallet: "1000",
+    email: "amir@gmail.com",
+});
+
+console.log(newUser._id);
+await newUser.save();
 
 ---------------------------------------

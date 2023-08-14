@@ -1,6 +1,9 @@
 const express = require("express");
 const app = express();
 
+// bootstrap
+require("./boot")();
+
 // boot application
 require("./middlewares")(app);
 
