@@ -76,8 +76,37 @@ const getUser = async (req, res, next) => {
 
         res.send({
             success: true,
-            message: "users list generated successfully",
+            message: "got user successfully",
             data: user
+        });
+    } catch (err) {
+        next(err);
+    };
+};
+
+
+const deleteUser = async (req, res, next) => {
+    try {
+        const {id} = req.params;
+        if (!id) {
+            return res.status(404).send({
+                error: true,
+                message: "user not found !"
+            });
+        };
+
+        const user = await userModel.deleteOne({_id: id});
+
+        if (!user) {
+            return res.status(404).send({
+                error: true,
+                message: "user not found !"
+            });
+        };
+
+        res.send({
+            success: true,
+            message: "the user deleted successfully",
         });
     } catch (err) {
         next(err);
@@ -88,5 +117,6 @@ const getUser = async (req, res, next) => {
 module.exports = {
     usersList,
     insertUser,
-    getUser
+    getUser,
+    deleteUser
 };
