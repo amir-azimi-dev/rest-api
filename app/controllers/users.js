@@ -54,7 +54,7 @@ const insertUser = async (req, res, next) => {
 
 const getUser = async (req, res, next) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         if (!id) {
             return res.status(404).send({
                 error: true,
@@ -65,7 +65,7 @@ const getUser = async (req, res, next) => {
         let fields = req.query.fields?.split(",") || [];
         projection = fields.reduce((prev, current) => ({ ...prev, [current]: 1 }), { _id: 0 })
 
-        const user = await userModel.findOne({_id: id}, projection);
+        const user = await userModel.findOne({ _id: id }, projection);
 
         if (!user) {
             return res.status(404).send({
@@ -87,7 +87,7 @@ const getUser = async (req, res, next) => {
 
 const deleteUser = async (req, res, next) => {
     try {
-        const {id} = req.params;
+        const { id } = req.params;
         if (!id) {
             return res.status(404).send({
                 error: true,
@@ -95,7 +95,7 @@ const deleteUser = async (req, res, next) => {
             });
         };
 
-        const user = await userModel.deleteOne({_id: id});
+        const user = await userModel.deleteOne({ _id: id });
 
         if (!user) {
             return res.status(404).send({
@@ -113,10 +113,40 @@ const deleteUser = async (req, res, next) => {
     };
 };
 
+const updateUser = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        if (!id) {
+            return res.status(404).send({
+                error: true,
+                message: "user not found !"
+            });
+        };
+
+        const {matchedCount, modifiedCount} = await userModel.updateOne({_id: id}, {...req.body, });
+        if (!matchedCount || !modifiedCount) {
+            return res.status(404).send({
+                error: true,
+                message: "update failed !"
+            });
+        };
+
+        res.send({
+            success: true,
+            message: "the user updated successfully."
+        });
+
+    } catch (err) {
+        next(err);
+    }
+};
+
+
 
 module.exports = {
     usersList,
     insertUser,
     getUser,
-    deleteUser
+    deleteUser,
+    updateUser
 };

@@ -1,4 +1,4 @@
-express, dotenv, body-parser, cors, mongoose
+express, dotenv, body-parser, cors, mongoose, jsonwebtoken
 
 ---------------------------------------
 
@@ -96,3 +96,7 @@ console.log(newUser._id);
 await newUser.save();
 
 ---------------------------------------
+
+// jsonWebToken
+
+// npm install jsonwebtoken
