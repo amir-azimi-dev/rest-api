@@ -1,16 +1,38 @@
 const userModel = require("../models/users");
 const hashService = require("../services/hash");
 
+const perPage = 1;
+
 const usersList = async (req, res, next) => {
     try {
         let fields = req.query.fields?.split(",") || [];
         projection = fields.reduce((prev, current) => ({ ...prev, [current]: 1 }), { _id: 0 })
 
-        const users = await userModel.find({}, {...projection});
+        const currentPage = +req.query.page || 1;
+        const offset = (currentPage - 1) * perPage;
+
+        const usersCount = await userModel.countDocuments({});
+        const totalPages = Math.ceil(usersCount / perPage);
+
+        const users = await userModel.find({}, { ...projection }).skip(offset).limit(perPage);
+
+        const fieldsQuery = req.query.fields ? `&fields=${req.query.fields}` :
+            "";
+
+        const prevPage = hasPrevPage(currentPage) ? `${process.env.APP_URL}/api/v1/users?page=${currentPage - 1}${fieldsQuery}` : null;
+
+        const nextPage = hasNextPage(currentPage, totalPages) ? `${process.env.APP_URL}/api/v1/users?page=${currentPage + 1}${fieldsQuery}` : null;
+
         res.send({
             success: true,
             message: "users list generated successfully",
-            data: users
+            data: users,
+            meta: {
+                page: currentPage,
+                totalPages,
+                prevPage,
+                nextPage
+            }
         });
     } catch (err) {
         next(err);
@@ -74,7 +96,7 @@ const getUser = async (req, res, next) => {
         let fields = req.query.fields?.split(",") || [];
         projection = fields.reduce((prev, current) => ({ ...prev, [current]: 1 }), { _id: 0 })
 
-        const user = await userModel.findOne({ _id: id }, {...projection, password: 0});
+        const user = await userModel.findOne({ _id: id }, { ...projection, password: 0 });
 
         if (!user) {
             return res.status(404).send({
@@ -132,13 +154,13 @@ const updateUser = async (req, res, next) => {
             });
         };
 
-        const updateData = {...req.body};
+        const updateData = { ...req.body };
         if (updateData.password) {
-        updateData.password = hashService.hash(updateData.password);
+            updateData.password = hashService.hash(updateData.password);
         };
 
 
-        const {matchedCount, modifiedCount} = await userModel.updateOne({_id: id}, updateData);
+        const { matchedCount, modifiedCount } = await userModel.updateOne({ _id: id }, updateData);
         if (!matchedCount || !modifiedCount) {
             return res.status(404).send({
                 error: true,
@@ -157,6 +179,8 @@ const updateUser = async (req, res, next) => {
 };
 
 
+const hasPrevPage = (currentPage) => currentPage > 1;
+const hasNextPage = (currentPage, totalPages) => currentPage < totalPages;
 
 module.exports = {
     usersList,
