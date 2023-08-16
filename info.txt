@@ -1,4 +1,9 @@
-express, dotenv, body-parser, cors, mongoose, jsonwebtoken
+// in header: 
+Authorization: Bearer token
+
+---------------------------------------
+
+express, dotenv, body-parser, cors, mongoose, jsonwebtoken, bcrypt
 
 ---------------------------------------
 
@@ -100,3 +105,9 @@ await newUser.save();
 // jsonWebToken
 
 // npm install jsonwebtoken
+// use open ssl on wsl to generate a secret key:
+openssl rand -hex 30
+
+const jwt = require("jsonwebtoken");
+const token = jwt.sign(data, secret, {expiresIn: millisecondsNumber});
+jwt.verify(token, process.env.APP_SECRET);

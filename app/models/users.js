@@ -4,11 +4,12 @@ const userSchema = new mongoose.Schema({
     first_name: String,
     last_name: String,
     mobile: String,
+    email: String,
+    password: String,
     wallet: {
         type: Number,
         default: 0
     },
-    email: String,
     created_at: {
         type: Date,
         default: Date.now()

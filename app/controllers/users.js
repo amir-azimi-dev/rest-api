@@ -1,11 +1,12 @@
 const userModel = require("../models/users");
+const hashService = require("../services/hash");
 
 const usersList = async (req, res, next) => {
     try {
         let fields = req.query.fields?.split(",") || [];
         projection = fields.reduce((prev, current) => ({ ...prev, [current]: 1 }), { _id: 0 })
 
-        const users = await userModel.find({}, projection);
+        const users = await userModel.find({}, {...projection});
         res.send({
             success: true,
             message: "users list generated successfully",
@@ -23,23 +24,31 @@ const insertUser = async (req, res, next) => {
             last_name,
             mobile,
             wallet,
-            email
+            email,
+            password
         } = req.body;
 
-        if (!first_name || !last_name || !mobile) {
+        if (!first_name || !last_name || !mobile || !password) {
             return res.status(422).send({
                 error: true,
                 message: "invalid entries."
             });
         };
 
+        console.log(password);
+        const hashedPassword = hashService.hash(password);
+        console.log(hashedPassword);
+
         const newUser = new userModel({
             first_name,
             last_name,
             mobile,
             wallet,
-            email
+            email,
+            password: hashedPassword
         });
+
+        console.log(newUser);
 
         await newUser.save();
         res.status(201).send({
@@ -65,7 +74,7 @@ const getUser = async (req, res, next) => {
         let fields = req.query.fields?.split(",") || [];
         projection = fields.reduce((prev, current) => ({ ...prev, [current]: 1 }), { _id: 0 })
 
-        const user = await userModel.findOne({ _id: id }, projection);
+        const user = await userModel.findOne({ _id: id }, {...projection, password: 0});
 
         if (!user) {
             return res.status(404).send({
@@ -123,7 +132,13 @@ const updateUser = async (req, res, next) => {
             });
         };
 
-        const {matchedCount, modifiedCount} = await userModel.updateOne({_id: id}, {...req.body, });
+        const updateData = {...req.body};
+        if (updateData.password) {
+        updateData.password = hashService.hash(updateData.password);
+        };
+
+
+        const {matchedCount, modifiedCount} = await userModel.updateOne({_id: id}, updateData);
         if (!matchedCount || !modifiedCount) {
             return res.status(404).send({
                 error: true,
